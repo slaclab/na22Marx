@@ -1,8 +1,8 @@
 #include <SPI.h>
 #include <string.h>
-#define MAX_STRING_LEN  25    //used for serial recieve
+#define MAX_STRING_LEN  404    //used for serial recieve
 
-#define num_cells 1
+#define num_cells 2
 
 //Pin definitions
 #define CS_1 2
@@ -20,10 +20,15 @@ byte    Stat2_value = 0;
 int     HV_condition_value = 0;
 int     Bus_condition_value = 0;
 int     TS3_value = 0;
-int     HV_desired = 1023;    //lowest output voltage
+int     HV_desired = 1023;    //default to lowest output voltage, 2^10-1 counts
+byte    Charge_disable_value = 1;
+byte    Trigger_disable_value = 1;
+byte    Coil1_enable_value = 0;
+byte    Coil2_enable_value = 0;
+byte    Battery_uC_enable_value = 0;
 
 String content = "";          //used for serial recieve
-const byte numChars = 25;     //used for serial recieve
+const byte numChars = 404;     //used for serial recieve
 char receivedBytes[numChars]; //used for serial recieve
 boolean newData = false;      //used for serial recieve
 char *record1;                //used for serial recieve
@@ -80,7 +85,6 @@ void setup() {
   /////////////////
 }
 
-
 // The loop routine runs over and over again forever:
 void loop() {
     //Read stat1 and stat2 and set global values
@@ -120,8 +124,6 @@ void loop() {
     SPI.endTransaction();
     /////////////////
 
-    Serial.println(Bus_condition_value);
-    delay(100);
 
     //Recieve and handle serial inputs
     recvWithStartEndBytes(); //handles serial
@@ -134,10 +136,40 @@ void processNewData() {
     //store parced data in variables
     String temp_S;
     byte control;
+    byte cell_num;
     
-    temp_S = String(record1);
-    if(temp_S.startsWith("C")){//is this a control byte?
-      
+    if(record1[0]=='C'){//if this a control byte
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after C is cell num
+      cell_num = temp_S.toInt(); //This is the previous cell number
+      temp_S = String(subStr(record1, " ", cell_num+3));
+      control = temp_S.toInt(); //loaded the corresponding control byte
+      Trigger_disable_value = control & B1;     //bit 0
+      Charge_disable_value = (control>>1) & B1;  //bit 1
+      Coil1_enable_value = (control>>2) & B1;  //bit 2
+      Coil2_enable_value = (control>>3) & B1;  //bit 3
+      Battery_uC_enable_value = (control>>4) & B1;  //bit 4
+      control = control | ((B00000000 | (Stat1_value&B1))<<5); //bit 5
+      control = control | ((B00000000 | (Stat2_value&B1))<<6); //bit 6
+      //Bit 7 unused for now
+
+      //update control string with the cell_num
+      char cstr[3];
+      cell_num = cell_num + 1;
+      sprintf(cstr, "%03d", cell_num);
+      record1[2] = cstr[0];
+      record1[3] = cstr[1];
+      record1[4] = cstr[2];
+
+      //update control string with the updated control byte
+      sprintf(cstr, "%03d", control);
+      record1[(cell_num)*4+2] = cstr[0];
+      record1[(cell_num)*4+2+1] = cstr[1];
+      record1[(cell_num)*4+2+2] = cstr[2];
+
+      //send to next cell
+      Serial.print("!");
+      Serial.print(record1);
+      Serial.println(",");     
     }
     else{ //make assumption it is "R" otherwise
       
