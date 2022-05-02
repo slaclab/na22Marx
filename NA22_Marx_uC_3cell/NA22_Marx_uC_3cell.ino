@@ -124,7 +124,6 @@ void loop() {
     SPI.endTransaction();
     /////////////////
 
-
     //Recieve and handle serial inputs
     recvWithStartEndBytes(); //handles serial
     record1 = receivedBytes; //bitches about this. char to *char    
@@ -143,13 +142,13 @@ void processNewData() {
       cell_num = temp_S.toInt(); //This is the previous cell number
       temp_S = String(subStr(record1, " ", cell_num+3));
       control = temp_S.toInt(); //loaded the corresponding control byte
-      Trigger_disable_value = control & B1;     //bit 0
-      Charge_disable_value = (control>>1) & B1;  //bit 1
-      Coil1_enable_value = (control>>2) & B1;  //bit 2
-      Coil2_enable_value = (control>>3) & B1;  //bit 3
-      Battery_uC_enable_value = (control>>4) & B1;  //bit 4
-      control = control | ((B00000000 | (Stat1_value&B1))<<5); //bit 5
-      control = control | ((B00000000 | (Stat2_value&B1))<<6); //bit 6
+      Trigger_disable_value = control & B1;                   //bit 0
+      Charge_disable_value = (control>>1) & B1;               //bit 1
+      Coil1_enable_value = (control>>2) & B1;                 //bit 2
+      Coil2_enable_value = (control>>3) & B1;                 //bit 3
+      Battery_uC_enable_value = (control>>4) & B1;            //bit 4
+      control = control | ((B00000000 | (Stat1_value&B1))<<5);//bit 5
+      control = control | ((B00000000 | (Stat2_value&B1))<<6);//bit 6
       //Bit 7 unused for now
 
       //update control string with the cell_num
@@ -172,15 +171,17 @@ void processNewData() {
       Serial.println(",");     
     }
     else{ //make assumption it is "R" otherwise
-      
-    }
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after C is cell num
+      cell_num = temp_S.toInt(); //This is the previous cell number
+      temp_S = String(subStr(record1, " ", cell_num*3+3)); //Three ints per cell
+      HV_desired = temp_S.toInt(); //loaded the desired HV voltage
 
-//    //find the first cell with bit7=0
-//    for(int i=1; i<=num_cells;i++){
-//      temp_S = String(subStr(record1, " ", i));
-//      control = temp_S.toInt();
-//      digitalWrite(Trigger_disable,bitRead(control,0));
-//    }
+
+      //send to next cell
+      Serial.print("!");
+      Serial.print(record1);
+      Serial.println(",");  
+    }
 
     newData = false;
   }
