@@ -1,8 +1,9 @@
+// Version 0: Initial release, 5/2/2022 M. Kemp
+
+
 #include <SPI.h>
 #include <string.h>
-#define MAX_STRING_LEN  404    //used for serial recieve
-
-#define num_cells 2
+#define MAX_STRING_LEN  406    //used for serial recieve
 
 //Pin definitions
 #define CS_1 2
@@ -28,7 +29,7 @@ byte    Coil2_enable_value = 0;
 byte    Battery_uC_enable_value = 0;
 
 String content = "";          //used for serial recieve
-const byte numChars = 404;     //used for serial recieve
+const byte numChars = 406;    //used for serial recieve
 char receivedBytes[numChars]; //used for serial recieve
 boolean newData = false;      //used for serial recieve
 char *record1;                //used for serial recieve
@@ -85,7 +86,7 @@ void setup() {
   /////////////////
 }
 
-// The loop routine runs over and over again forever:
+//Main loop
 void loop() {
     //Read stat1 and stat2 and set global values
     Stat1_value = digitalRead(Stat1);
@@ -124,7 +125,6 @@ void loop() {
     SPI.endTransaction();
     /////////////////
 
-
     //Recieve and handle serial inputs
     recvWithStartEndBytes(); //handles serial
     record1 = receivedBytes; //bitches about this. char to *char    
@@ -137,23 +137,29 @@ void processNewData() {
     String temp_S;
     byte control;
     byte cell_num;
+    char cstr[5];
     
     if(record1[0]=='C'){//if this a control byte
       temp_S = String(subStr(record1, " ", 1+1)); //first byte after C is cell num
       cell_num = temp_S.toInt(); //This is the previous cell number
       temp_S = String(subStr(record1, " ", cell_num+3));
       control = temp_S.toInt(); //loaded the corresponding control byte
-      Trigger_disable_value = control & B1;     //bit 0
-      Charge_disable_value = (control>>1) & B1;  //bit 1
-      Coil1_enable_value = (control>>2) & B1;  //bit 2
-      Coil2_enable_value = (control>>3) & B1;  //bit 3
-      Battery_uC_enable_value = (control>>4) & B1;  //bit 4
-      control = control | ((B00000000 | (Stat1_value&B1))<<5); //bit 5
-      control = control | ((B00000000 | (Stat2_value&B1))<<6); //bit 6
+      Trigger_disable_value = control & B1;                   //bit 0
+      digitalWrite(Trigger_disable,Trigger_disable_value);
+      Charge_disable_value = (control>>1) & B1;               //bit 1
+      digitalWrite(Charge_disable,Charge_disable_value);
+      Coil1_enable_value = (control>>2) & B1;                 //bit 2
+      digitalWrite(Coil1_enable,Coil1_enable_value);
+      Coil2_enable_value = (control>>3) & B1;                 //bit 3
+      digitalWrite(Coil2_enable,Coil2_enable_value);
+      Battery_uC_enable_value = (control>>4) & B1;            //bit 4
+      digitalWrite(Battery_uC_enable,Battery_uC_enable_value);
+      control = control | ((B00000000 | (Stat1_value&B1))<<5);//bit 5
+      control = control | ((B00000000 | (Stat2_value&B1))<<6);//bit 6
       //Bit 7 unused for now
 
       //update control string with the cell_num
-      char cstr[3];
+      
       cell_num = cell_num + 1;
       sprintf(cstr, "%03d", cell_num);
       record1[2] = cstr[0];
@@ -171,16 +177,39 @@ void processNewData() {
       Serial.print(record1);
       Serial.println(",");     
     }
-    else{ //make assumption it is "R" otherwise
+    else if (record1[0]=='H'){ //HV des and act
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after C is cell num
+      cell_num = temp_S.toInt(); //This is the previous cell number
+      temp_S = String(subStr(record1, " ", cell_num*1+3)); //One int per cell
+      HV_desired = temp_S.toInt(); //loaded the desired HV voltage
+
+      //update read string with the cell_num
+      cell_num = cell_num + 1;
+      sprintf(cstr, "%03d", cell_num);
+      record1[2] = cstr[0];
+      record1[3] = cstr[1];
+      record1[4] = cstr[2];
+
+      //update control string with the updated control byte
+      sprintf(cstr, "%04d", HV_condition_value);
+      record1[(cell_num-1)*5+6] = cstr[0];
+      record1[(cell_num-1)*5+7] = cstr[1];
+      record1[(cell_num-1)*5+8] = cstr[2];
+      record1[(cell_num-1)*5+9] = cstr[3];
+
+      //send to next cell
+      Serial.print("!");
+      Serial.print(record1);
+      Serial.println(",");  
+    }
+    else if (record1[0]=='B'){
+      //int     Bus_condition_value = 0;
       
     }
-
-//    //find the first cell with bit7=0
-//    for(int i=1; i<=num_cells;i++){
-//      temp_S = String(subStr(record1, " ", i));
-//      control = temp_S.toInt();
-//      digitalWrite(Trigger_disable,bitRead(control,0));
-//    }
+    else if (record1[0]=='T'){
+      //int     TS3_value = 0;
+      
+    }
 
     newData = false;
   }
