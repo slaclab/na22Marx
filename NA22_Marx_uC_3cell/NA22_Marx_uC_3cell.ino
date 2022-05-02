@@ -129,7 +129,6 @@ void loop() {
     processNewData();        //parse into variables, check fault, update DACs
 }
 
-
 void processNewData() {
   if (newData == true) {
     //store parced data in variables
@@ -142,39 +141,6 @@ void processNewData() {
       control = temp_S.toInt();
       digitalWrite(Trigger_disable,bitRead(control,0));
     }
-    
-    
-
-    //Serial.println((control>>1)&B1); //This operation gets the 2nd LSB
-
-    //first recieved int
-    //temp_S = String(subStr(record1, " ", 2));
-   // new_Vdes =  temp_S.toInt();  //in counts
-
-//    //enable rheostat
-//    byte high = B00011100;  //command 7 0x1C
-//    byte lo = B00000010;    // 0x02
-//    SPI.beginTransaction(settingsB);
-//    digitalWrite (2, LOW);
-//    SPI.transfer(high); 
-//    SPI.transfer(lo); 
-//    digitalWrite (2, HIGH);
-//    SPI.endTransaction();
-//    //////////////////
-//
-//    //update rheostat
-//    //control bits: B000001 (6bits)
-//    //followed by 10 bits
-//    //new_Vdes = 50; //10bits
-//    lo = new_Vdes & B11111111; //low 8 bits
-//    high = B00000100 | ((new_Vdes>>8)&B11); //control bits plus high 2 bits
-//    SPI.beginTransaction(settingsB);
-//    digitalWrite (2, LOW);
-//    SPI.transfer(high); 
-//    SPI.transfer(lo);         
-//    digitalWrite (2, HIGH);
-//    SPI.endTransaction();
-//    /////////////////
 
     newData = false;
   }
