@@ -134,13 +134,21 @@ void processNewData() {
     //store parced data in variables
     String temp_S;
     byte control;
-
-    //find the first cell with bit7=0
-    for(int i=1; i<=num_cells;i++){
-      temp_S = String(subStr(record1, " ", i));
-      control = temp_S.toInt();
-      digitalWrite(Trigger_disable,bitRead(control,0));
+    
+    temp_S = String(record1);
+    if(temp_S.startsWith("C")){//is this a control byte?
+      
     }
+    else{ //make assumption it is "R" otherwise
+      
+    }
+
+//    //find the first cell with bit7=0
+//    for(int i=1; i<=num_cells;i++){
+//      temp_S = String(subStr(record1, " ", i));
+//      control = temp_S.toInt();
+//      digitalWrite(Trigger_disable,bitRead(control,0));
+//    }
 
     newData = false;
   }
