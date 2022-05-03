@@ -178,7 +178,7 @@ void processNewData() {
       Serial.println(",");     
     }
     else if (record1[0]=='H'){ //HV des and act
-      temp_S = String(subStr(record1, " ", 1+1)); //first byte after C is cell num
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after H is cell num
       cell_num = temp_S.toInt(); //This is the previous cell number
       temp_S = String(subStr(record1, " ", cell_num*1+3)); //One int per cell
       HV_desired = temp_S.toInt(); //loaded the desired HV voltage
@@ -203,12 +203,51 @@ void processNewData() {
       Serial.println(",");  
     }
     else if (record1[0]=='B'){
-      //int     Bus_condition_value = 0;
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after H is cell num
+      cell_num = temp_S.toInt(); //This is the previous cell number
+      
+      //update read string with the cell_num
+      cell_num = cell_num + 1;
+      sprintf(cstr, "%03d", cell_num);
+      record1[2] = cstr[0];
+      record1[3] = cstr[1];
+      record1[4] = cstr[2];
+
+      //update control string with the updated control byte
+      sprintf(cstr, "%04d", Bus_condition_value);
+      record1[(cell_num-1)*5+6] = cstr[0];
+      record1[(cell_num-1)*5+7] = cstr[1];
+      record1[(cell_num-1)*5+8] = cstr[2];
+      record1[(cell_num-1)*5+9] = cstr[3];
+
+      //send to next cell
+      Serial.print("!");
+      Serial.print(record1);
+      Serial.println(","); 
       
     }
     else if (record1[0]=='T'){
-      //int     TS3_value = 0;
+      temp_S = String(subStr(record1, " ", 1+1)); //first byte after H is cell num
+      cell_num = temp_S.toInt(); //This is the previous cell number
       
+      //update read string with the cell_num
+      cell_num = cell_num + 1;
+      sprintf(cstr, "%03d", cell_num);
+      record1[2] = cstr[0];
+      record1[3] = cstr[1];
+      record1[4] = cstr[2];
+
+      //update control string with the updated control byte
+      sprintf(cstr, "%04d", TS3_value);
+      record1[(cell_num-1)*5+6] = cstr[0];
+      record1[(cell_num-1)*5+7] = cstr[1];
+      record1[(cell_num-1)*5+8] = cstr[2];
+      record1[(cell_num-1)*5+9] = cstr[3];
+
+      //send to next cell
+      Serial.print("!");
+      Serial.print(record1);
+      Serial.println(","); 
     }
 
     newData = false;
