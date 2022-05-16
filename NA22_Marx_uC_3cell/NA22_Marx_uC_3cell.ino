@@ -55,6 +55,8 @@ void setup() {
   pinMode(Stat1, INPUT);
   pinMode(Stat2, INPUT);
   digitalWrite(CS_1,HIGH);                //Set to disable
+  digitalWrite(CS_1,LOW);                //Set to disable
+  digitalWrite(CS_1,HIGH);                //Set to disable
   SPI.begin();                            //Initialize SPI
   delay(1000);
 
@@ -71,6 +73,7 @@ void setup() {
   SPI.endTransaction();
   //////////////////
 
+  // "Command 1"
   //update rheostat
   //control bits: B000001 (6bits)
   //followed by 10 bits
