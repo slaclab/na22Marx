@@ -157,8 +157,8 @@ void processNewData() {
       digitalWrite(Coil2_enable,Coil2_enable_value);
       Battery_uC_enable_value = (control>>4) & B1;            //bit 4
       digitalWrite(Battery_uC_enable,Battery_uC_enable_value);
-      control = control | ((B00000000 | (Stat1_value&B1))<<5);//bit 5
-      control = control | ((B00000000 | (Stat2_value&B1))<<6);//bit 6
+      control = (control|B00100000) & (B11011111 | ((B00000000 | (Stat1_value&B1))<<5));//bit 5
+      control = (control|B01000000) & (B10111111 | ((B00000000 | (Stat2_value&B1))<<6));//bit 6
       //Bit 7 unused for now
 
       //update control string with the cell_num
