@@ -178,7 +178,7 @@ void processNewData() {
       //send to next cell
       Serial.print("!");
       Serial.print(record1);
-      Serial.println(",");     
+      Serial.print(",");     
     }
     else if (record1[0]=='H'){ //HV des and act
       temp_S = String(subStr(record1, " ", 1+1)); //first byte after H is cell num
@@ -203,7 +203,7 @@ void processNewData() {
       //send to next cell
       Serial.print("!");
       Serial.print(record1);
-      Serial.println(",");  
+      Serial.print(",");  
     }
     else if (record1[0]=='B'){
       temp_S = String(subStr(record1, " ", 1+1)); //first byte after H is cell num
@@ -226,7 +226,7 @@ void processNewData() {
       //send to next cell
       Serial.print("!");
       Serial.print(record1);
-      Serial.println(","); 
+      Serial.print(","); 
       
     }
     else if (record1[0]=='T'){
@@ -250,7 +250,7 @@ void processNewData() {
       //send to next cell
       Serial.print("!");
       Serial.print(record1);
-      Serial.println(","); 
+      Serial.print(","); 
     }
 
     newData = false;
