@@ -40,7 +40,6 @@ char *p, *i;                  //used for serial recieve
 SPISettings settingsB(5000000, MSBFIRST, SPI_MODE1); 
 
 void setup() {
-  Serial.begin(38400);        // Initialize serial communication at 38400 bits per second
   pinMode(CS_1, OUTPUT);      //CS1 for U2, rheostat for Vout control
   pinMode(Charge_disable, OUTPUT);
   digitalWrite(Charge_disable,HIGH);      //Set to disable
@@ -58,6 +57,7 @@ void setup() {
   digitalWrite(CS_1,LOW);                //Set to disable
   digitalWrite(CS_1,HIGH);                //Set to disable
   SPI.begin();                            //Initialize SPI
+  Serial.begin(38400);        // Initialize serial communication at 38400 bits per second
   delay(1000);
 
   /////////
